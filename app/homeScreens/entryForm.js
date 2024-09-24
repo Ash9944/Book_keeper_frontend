@@ -1,26 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { getFriends , addTransaction } from '../httpRequests';
+import { AppContext } from '../../AppContext';
 import { Dropdown } from 'react-native-element-dropdown';
 import DatePicker from 'react-native-date-picker'
 
 const AmountEntryScreen = () => {
     const [amountDetails, setAmountDetails] = useState({});
+    const [users, setUsers] = useState([]);
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState(new Date());
+    const { userDetails } = useContext(AppContext);
 
-    const data = [
-        { label: 'Item 1', value: '1' },
-        { label: 'Item 4', value: '2' },
+    useFocusEffect(
+        React.useCallback(() => {
+            // This will fire every time the screen is focused
+            getUsers();
+        }, [userDetails])
+    );
 
-    ]
+    async function getUsers() {
+        let response = await getFriends(userDetails["_id"]);
+        const filteredUsers = response.map((user) => {
+            return {
+                label: user.name,
+                value: user,
+            }
+        });
+        setUsers(filteredUsers);
+    }
 
     const trxTypes = [
         { label: 'Credit', value: '1' },
         { label: 'Debit', value: '2' },
     ]
 
-    const onPressLearnMore = function () {
-        console.log(amountDetails);
+    const onPressLearnMore = async function () {
+        await addTransaction(userDetails["_id"] , amountDetails);
         setAmountDetails({});
     }
 
@@ -46,9 +63,9 @@ const AmountEntryScreen = () => {
                 containerStyle={{ backgroundColor: 'black' }}
             />
 
-            <Text style={styles.label}>Select user to credit/debit</Text>
+            <Text style={styles.label}>Select user to Credit / Debit</Text>
             <Dropdown style={styles.input}
-                data={data}
+                data={users}
                 labelField="label"
                 valueField="value"
                 value={amountDetails.user}
@@ -84,14 +101,14 @@ const AmountEntryScreen = () => {
                 date={date}
                 onConfirm={(date) => {
                     setOpen(false)
-                    handleChange("date" , date)
+                    handleChange("date", date)
                 }}
                 onCancel={() => {
                     setOpen(false)
                 }}
                 mode="date"
                 maximumDate={new Date()}
-            />    
+            />
 
             <Text style={styles.label}></Text>
             <Button title="Submit Details" onPress={() => onPressLearnMore()} />

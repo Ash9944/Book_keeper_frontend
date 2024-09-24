@@ -1,6 +1,7 @@
 // App.js
 import React, { useContext } from 'react';
-import { AppRegistry, TouchableOpacity, Text , Button } from 'react-native';
+import { AppRegistry, TouchableOpacity, Text, Button } from 'react-native';
+import PushNotification from 'react-native-push-notification';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './app/login';
@@ -11,7 +12,12 @@ import { AppProvider, AppContext } from './AppContext';
 const Stack = createStackNavigator();
 
 const App = () => {
-    const { userToken, setUserToken } = useContext(AppContext);
+    const { userToken, setUserToken  , setUserDetails} = useContext(AppContext);
+
+    const logout = () => {
+        setUserToken(false);
+        setUserDetails({});
+    };
 
     return (
         <NavigationContainer>
@@ -20,7 +26,7 @@ const App = () => {
                     <>
                         <Stack.Screen name="Home" component={HomeScreen} options={{
                             headerRight: (props) => (
-                                <TouchableOpacity onPress={() => { setUserToken(false) }}>
+                                <TouchableOpacity onPress={() => { logout() }}>
                                     <Text style={{ marginRight: 10, color: 'black' }}>Sign Out</Text>
                                 </TouchableOpacity>
                             ),

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Modal, FlatList, View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { getFriends, addFriend } from '../httpRequests'
+import { getFriends, removeFriend , removeCustomFriend } from '../httpRequests';
 import { AppContext } from '../../AppContext';
-
+import { useFocusEffect } from '@react-navigation/native';
 
 const MyFriendsScreen = ({ navigation }) => {
     const [allFriends, setAllFriends] = useState(null);
@@ -21,27 +21,54 @@ const MyFriendsScreen = ({ navigation }) => {
         }
     }
 
-    useEffect(() => {
-        fetchFriends();
-    }, [navigation]);
+    useFocusEffect(
+        React.useCallback(() => {
+            // This will fire every time the screen is focused
+            fetchFriends();
 
-    const setEnvToAddFriend = async function (user) {
-        let response = await addFriend(userDetails["_id"], user["_id"]);
+            return () => {
+                // Optional: cleanup function if needed when screen loses focus
+            };
+        }, [])
+    );
+
+    const setEnvToRemoveFriend = async function (user) {
+        let response = await removeFriend(userDetails["_id"], user["_id"]);
         if (response) {
-            Alert.alert("Friend Added");
+            Alert.alert(`Removed ${user.name} from your friends`);
             fetchFriends();
         } else {
-            Alert.alert("Failed To Add Friend");
+            Alert.alert(`Failed to Removed ${user.name} from your friends`);
+        }
+    }
+
+    const setEnvToRemoveCustomFriend = async function (user) {
+        let response = await removeCustomFriend(userDetails["_id"], user["_id"]);
+        if (response) {
+            Alert.alert(`Removed ${user.name} from your friends`);
+            fetchFriends();
+        } else {
+            Alert.alert(`Failed to Removed ${user.name} from your friends`);
         }
     }
 
     const addFriendList = ({ item }) => (
-        <View style={styles.nameContainer}>
-            <Text style={styles.name}>{item.name}</Text>
-            <TouchableOpacity onPress={() => setEnvToAddFriend(item)}>
-                <Text>Remove Friend</Text>
-            </TouchableOpacity>
-        </View>
+        (!item.isCustomUser ? (
+            <View style={styles.nameContainer}>
+                <Text style={styles.name}>{item.name}</Text>
+                <TouchableOpacity onPress={() => setEnvToRemoveFriend(item)}>
+                    <Text>Remove Friend</Text>
+                </TouchableOpacity>
+            </View>
+        ) : (
+            <View style={styles.nameContainer}>
+                <Text style={styles.name}>{item.name}</Text>
+                <TouchableOpacity onPress={() => setEnvToRemoveCustomFriend(item)}>
+                    <Text>Remove custom friend</Text>
+                </TouchableOpacity>
+            </View>
+        )
+        )
     );
 
     return (

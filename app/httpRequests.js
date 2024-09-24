@@ -123,12 +123,113 @@ export async function addFriend(userId, friendId) {
     }
 }
 
+export async function removeFriend(userId, friendId) {
+    try {
+        let response = await httpRequest(`${baseUrl}/remove/friend`, 'DELETE', {
+            "friendId": friendId,
+            "userId": userId
+        });
+
+        if (!response.data) {
+            throw new Error("Failed To fetch User");
+        }
+
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
 export async function acceptFriendRequest(userId, friendId) {
     try {
         let response = await httpRequest(`${baseUrl}/accept/friend`, 'POST', {
             "friendId": friendId,
             "userId": userId
         });
+
+        if (!response.data) {
+            throw new Error("Failed To fetch User");
+        }
+
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
+export async function addCustomUser(userId, userDetails) {
+    try {
+        let response = await httpRequest(`${baseUrl}/add/custom/friend/${userId}`, 'POST', userDetails);
+
+        if (!response.data) {
+            throw new Error("Failed To fetch User");
+        }
+
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
+export async function removeCustomFriend(userId, friendId) {
+    try {
+        let response = await httpRequest(`${baseUrl}/remove/custom/friend/${userId}/${friendId}`, 'DELETE');
+
+        if (!response.data) {
+            throw new Error("Failed To fetch User");
+        }
+
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
+export async function addTransaction(userId, trxDetails) {
+    try {
+        let response = await httpRequest(`${baseUrl}/add/transaction/${userId}`, 'POST', trxDetails);
+
+        if (!response.data) {
+            throw new Error("Failed To fetch User");
+        }
+
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
+export async function getTransactions(userId) {
+    try {
+        let response = await httpRequest(`${baseUrl}/transactions/${userId}`, 'GET');
+
+        if (!response.data) {
+            throw new Error("Failed To fetch User");
+        }
+
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
+export async function getProfileTrx(userId , friendId) {
+    try {
+        let response = await httpRequest(`${baseUrl}/profile/transactions/${userId}/${friendId}`, 'GET');
+
+        if (!response.data) {
+            throw new Error("Failed To fetch User");
+        }
+
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+}
+
+export async function removeTrx(transactionId) {
+    try {
+        let response = await httpRequest(`${baseUrl}/transactions/${transactionId}`, 'DELETE');
 
         if (!response.data) {
             throw new Error("Failed To fetch User");

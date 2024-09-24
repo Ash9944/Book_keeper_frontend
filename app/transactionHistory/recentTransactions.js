@@ -1,26 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState , useContext } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
+import { getTransactions } from '../httpRequests';
+import { useFocusEffect } from '@react-navigation/native';
+import { AppContext } from '../../AppContext';
 
-const RecentTransactions = ({ navigation, route }) => {
-    // const [amountDetails, setAmountDetails] = useState({});
-    const data = [
-        {
+const RecentTransactions = ({navigation }) => {
+    const { userDetails } = useContext(AppContext);
+    const [data, setData] = useState([]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            // This will fire every time the screen is focused
+            getUsers();
+        }, [userDetails])
+    );
+
+    async function getUsers() {
+        let response = await getTransactions(userDetails["_id"]);
+
+        setData([{
             title: 'Active Transactions',
-            data: [{ "name": 'Ashwajit', "type": "credit", "amount": 500 }, { "name": 'Logesh', "type": "debit", "amount": 600 }],
-        },
-    ];
-
-    const onPress = ({ name, type, amount }) => {
-        navigation.navigate("ProfileTrx", { name, type, amount });
+            data: response,
+        }])
     }
 
-    const Item = ({ name, type, amount }) => (
-        <TouchableOpacity onPress={() => onPress({ name, type, amount })}>
+    const onPress = (userId) => {
+        navigation.navigate("ProfileTrx", { "userId" : userId});
+    }
+
+    const Item = ({ userData , amount }) => (
+        <TouchableOpacity onPress={() => onPress(userData["_id"])}>
             <View style={styles.nameContainer}>
-                <Text style={styles.name}>{name}</Text>
-                {type === 'credit' ?
-                    (<Text style={styles.textProfit}>{`+${amount}`}</Text>) :
-                    (<Text style={styles.textLoss}>{`-${amount}`}</Text>)
+                <Text style={styles.name}>{userData.name}</Text>
+                {amount > 0 ?
+                    (<Text style={styles.textProfit}>{`${amount}`}</Text>) :
+                    (<Text style={styles.textLoss}>{`${(amount)}`}</Text>)
                 }
 
             </View>
@@ -34,7 +48,7 @@ const RecentTransactions = ({ navigation, route }) => {
             <SectionList
                 sections={data}
                 keyExtractor={(item, index) => item + index}
-                renderItem={({ item }) => <Item name={item.name} type={item.type} amount={item.amount} />}
+                renderItem={({ item }) => <Item userData={item} amount={item['CREDIT'] - item['DEBIT']} />}
                 renderSectionHeader={({ section: { title } }) => (
                     <Text style={styles.title}>{title}</Text>
                 )}
@@ -44,8 +58,8 @@ const RecentTransactions = ({ navigation, route }) => {
 }
 
 const styles = StyleSheet.create({
-    container : {
-        backgroundColor : 'black',
+    container: {
+        backgroundColor: 'black',
         flex: 1
     },
     title: {

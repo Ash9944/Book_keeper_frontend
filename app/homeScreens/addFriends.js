@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Modal, FlatList, View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { getFriends, getAllUserDetails, addFriend } from '../httpRequests'
+import { addCustomUser, getAllUserDetails, addFriend } from '../httpRequests'
 import { AppContext } from '../../AppContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 const AddFriendsScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [allFriends, setAllFriends] = useState(null);
-    const [customUser, setCustomUser] = useState(null);
+    const [customUser, setCustomUser] = useState({});
     const { userDetails } = useContext(AppContext);
 
     async function fetchFriends() {
@@ -30,9 +31,20 @@ const AddFriendsScreen = ({ navigation }) => {
         }));
     };
 
-    useEffect(() => {
-        fetchFriends();
-    }, [navigation]);
+    useFocusEffect(
+        React.useCallback(() => {
+            // This will fire every time the screen is focused
+            fetchFriends();
+
+            return () => {
+                // Optional: cleanup function if needed when screen loses focus
+            };
+        }, [])
+    );
+
+    // useEffect(() => {
+    //     fetchFriends();
+    // }, [navigation]);
 
     const setEnvToAddFriend = async function (user) {
         let response = await addFriend(userDetails["_id"], user["_id"]);
@@ -44,7 +56,14 @@ const AddFriendsScreen = ({ navigation }) => {
         }
     }
 
-    const submitCustomUserDetails = async function(){
+    const submitCustomUserDetails = async function () {
+        try {
+            await addCustomUser(userDetails["_id"],customUser);
+            setCustomUser({});
+            setModalVisible(false); 
+        } catch (error) {
+            Alert.alert("Failed To Add User");
+        }
         
     }
 
@@ -55,6 +74,7 @@ const AddFriendsScreen = ({ navigation }) => {
                 <Text>Add Friend</Text>
             </TouchableOpacity>
         </View>
+
     );
 
     return (
@@ -92,14 +112,21 @@ const AddFriendsScreen = ({ navigation }) => {
                         <TextInput
                             style={styles.input}
                             placeholderTextColor="black"
-                            placeholder="Enter a unique ID"
+                            placeholder="Enter Phone Number"
                             value={customUser.id}
-                            onChangeText={text => handleChange('id', text)}
+                            onChangeText={text => handleChange('phoneNumber', text)}
                         />
 
-                        <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
-                            <Button title="Submit Details" onPress={() => submitCustomUserDetails()} />
-                            <Button title="Close Modal" onPress={() => setModalVisible(false)} />
+                        <View style={{ flexDirection: 'row' }}>
+                            <TouchableOpacity style={{ width: '30%' }} onPress={() => submitCustomUserDetails()}>
+                                <Text style={{ color: 'black' }}>Add</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                <Text style={{ color: 'black' }}>Close</Text>
+                            </TouchableOpacity>
+                            {/* <Button title="Submit Details" onPress={() => submitCustomUserDetails()} />
+                            <Button title="Close Modal" onPress={() => setModalVisible(false)} /> */}
                         </View>
 
                     </View>

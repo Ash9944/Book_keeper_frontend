@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { Modal, FlatList, View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { getRequests, acceptFriendRequest } from '../httpRequests'
 import { AppContext } from '../../AppContext';
-
+import { useFocusEffect } from '@react-navigation/native';
 
 const FriendRequestScreen = () => {
     const [allFriends, setAllFriends] = useState(null);
@@ -21,9 +21,16 @@ const FriendRequestScreen = () => {
         }
     }
 
-    useEffect(() => {
-        fetchFriends();
-    }, [userDetails]);
+    useFocusEffect(
+        React.useCallback(() => {
+            // This will fire every time the screen is focused
+            fetchFriends();
+
+            return () => {
+                // Optional: cleanup function if needed when screen loses focus
+            };
+        }, [])
+    );
 
     const setEnvToAcceptFriend = async function (user) {
         let response = await acceptFriendRequest(userDetails["_id"], user["_id"]);
